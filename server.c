@@ -12,7 +12,10 @@ void	add_bit_buffer(char bit)
 
 	if (bit_i == 8)
 	{
-		char_i++;
+		if (buffer[char_i] == '\0')
+			char_i = 0;
+		else
+			char_i++;
 		bit_i = 0;
 	}
 	buffer[char_i] <<= 1;
@@ -21,9 +24,29 @@ void	add_bit_buffer(char bit)
 	bit_i++;
 }
 
-void	handle()
+void	bit_0()
 {
-	ft_printf("RECU\n");
+	add_bit_buffer(0);
+}
+
+void	bit_1()
+{
+	add_bit_buffer(1);
+}
+
+void	wait_signal()
+{
+	while (TRUE)
+	{
+		signal(SIGUSR1, bit_0);
+		signal(SIGUSR2, bit_1);
+		pause();
+		if (ft_strnchr(buffer, '\0', BUFFER_SIZE))
+		{
+			ft_printf("Message recu : %s\n", buffer);
+			ft_memset((void *)&buffer[0], '\0', BUFFER_SIZE);
+		}
+	}
 }
 
 int	main(int argc, char *argv[])
@@ -31,6 +54,8 @@ int	main(int argc, char *argv[])
 	buffer = ft_calloc(sizeof(char), BUFFER_SIZE);
 	ft_printf("Server PID : %d\n", getpid());
 	
+
+
 	char	*str = "test";
 	while (*str)
 	{
@@ -44,10 +69,7 @@ int	main(int argc, char *argv[])
 		}
 		str++;
 	}
-	ft_printf("Result : %s\n", buffer);
-	
 
-	// signal(SIGUSR1, handle);
-	// pause();
+
 	return (0);
 }
