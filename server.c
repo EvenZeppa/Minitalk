@@ -10,7 +10,7 @@ void	add_bit_buffer(char bit)
 	static int	char_i = 0;
 	static int	bit_i = 0;
 
-	if (bit_i == 7)
+	if (bit_i == 8)
 	{
 		char_i++;
 		bit_i = 0;
@@ -18,6 +18,7 @@ void	add_bit_buffer(char bit)
 	buffer[char_i] <<= 1;
 	if (bit)
 		buffer[char_i]++;
+	bit_i++;
 }
 
 void	handle()
@@ -33,9 +34,17 @@ int	main(int argc, char *argv[])
 	char	*str = "test";
 	while (*str)
 	{
-		char	bit = *str;
+		char	byte = *str;
+		char	bit = 0;
+		while (bit < 8)
+		{
+			add_bit_buffer((byte & 0b10000000) == 0b10000000 ? (char)0b00000001 : 0);
+			byte <<= 1;
+			bit++;
+		}
 		str++;
 	}
+	ft_printf("Result : %s\n", buffer);
 	
 
 	// signal(SIGUSR1, handle);
