@@ -2,11 +2,12 @@
 #include <stdio.h>
 #include "libft.h"
 
-#define BUFFER_SIZE 128
+#define BUFFER_SIZE 4096
 
 typedef struct s_message
 {
 	char	*buffer;
+	int		buffer_size;
 	int		char_i;
 	int		bit_i;
 	int		pid_client;
@@ -63,10 +64,20 @@ void	wait_signal()
 {
 	while (TRUE)
 	{
+		if (!message.buffer || message.char_i >= message.buffer_size - 1)
+		{
+			message.buffer_size = message.buffer_size + BUFFER_SIZE;
+			message.buffer = ft_realloc(message.buffer, sizeof(char) * message.buffer_size);
+			if (!message.buffer)
+			{
+				ft_printf("Erreur d'allocation de la memoire du buffer !\n");
+				exit(1);
+			}
+		}
 		pause();
 		if (message.bit_i == 8 && message.buffer[message.char_i] == '\0')
 		{
-			printf("Message recu : %s\n", message.buffer);
+			ft_printf("Message recu : %s\n", message.buffer);
 			kill(message.pid_client, SIGUSR2);
 			break;
 		}
@@ -84,7 +95,8 @@ int	main(void)
 {
 	signal(SIGUSR1, bit_0);
 	signal(SIGUSR2, bit_1);
-	message.buffer = ft_calloc(sizeof(char), BUFFER_SIZE);
+	message.buffer = NULL;
+	message.buffer_size = BUFFER_SIZE;
 	ft_printf("Server PID : %d\n", getpid());
 	while (TRUE)
 	{

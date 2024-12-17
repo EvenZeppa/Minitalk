@@ -1,5 +1,6 @@
 #include "libft.h"
 #include <signal.h>
+#include <fcntl.h>
 
 int	is_bit_received;
 
