@@ -1,41 +1,34 @@
-#include "libft.h"
-#include <signal.h>
-#include <fcntl.h>
+#include "client.h"
 
-typedef struct s_client
-{
-	int		pid_server;
-	char	*msg;
-	int		bit;
-}	t_client;
+t_client	g_client;
 
-t_client	client;
-
-void	send_next_bit()
+void	send_next_bit(void)
 {
 	int	next_bit;
 
-	next_bit = (client.msg[0] >> (7 - client.bit)) & (1 << 7);
-	client.msg[0] <<= 1;
-	client.bit++;
-	if (client.bit == 8)
+	next_bit = (g_client.msg[0] >> (7 - g_client.bit)) & (1 << 7);
+	g_client.msg[0] <<= 1;
+	g_client.bit++;
+	if (g_client.bit == 8)
 	{
-		client.bit = 0;
-		client.msg++;
+		g_client.bit = 0;
+		g_client.msg++;
 	}
 	if (next_bit)
-		kill(client.pid_server, SIGUSR2);
+		kill(g_client.pid_server, SIGUSR2);
 	else
-		kill(client.pid_server, SIGUSR1);
+		kill(g_client.pid_server, SIGUSR1);
 }
 
-void	s1_handler()
+void	s1_handler(int signal)
 {
+	(void)signal;
 	send_next_bit();
 }
 
-void	s2_handler()
+void	s2_handler(int signal)
 {
+	(void)signal;
 	ft_printf("Server has received your message !\n");
 	exit(EXIT_SUCCESS);
 }
@@ -55,13 +48,10 @@ int	main(int argc, char *argv[])
 	}
 	signal(SIGUSR1, s1_handler);
 	signal(SIGUSR2, s2_handler);
-
-	client.pid_server = ft_atoi(argv[1]);
-	client.msg = argv[2];
-	client.bit = 0;
-
+	g_client.pid_server = ft_atoi(argv[1]);
+	g_client.msg = argv[2];
+	g_client.bit = 0;
 	send_next_bit();
-
 	while (TRUE)
 		pause();
 	return (0);
